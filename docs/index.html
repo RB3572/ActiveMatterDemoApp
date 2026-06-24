@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Active Matter Pump Simulations</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Active Matter Pump Simulations</h1>
+      <p>Browse active-matter pump designs and play simulation movies in your browser.</p>
+    </div>
+    <input id="search" type="search" placeholder="Search simulations" />
+  </header>
+  <main>
+    <section id="categories" class="category-grid"></section>
+    <section id="viewer" class="viewer" hidden>
+      <button id="back" class="back-button">Back</button>
+      <div class="viewer-layout">
+        <aside>
+          <h2 id="viewer-title"></h2>
+          <p id="viewer-meta"></p>
+          <div id="video-list" class="video-list"></div>
+        </aside>
+        <div class="stage">
+          <video id="video" controls playsinline preload="metadata"></video>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
