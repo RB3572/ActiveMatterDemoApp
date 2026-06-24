@@ -1,0 +1,17 @@
+
+Simulation Parameters
+=====================
+grid_name: mass_spring_arrays_600x
+num_steps: 100
+dt: 0.03
+activated_rest_length: 0.3
+bdrate: 0.08545
+cdrate: -0.008405
+activated_spring_constant: 25
+max_length: 2.5
+damping: 0.99
+resis : 10
+noise: 0.1
+light_pattern:lightmask.tiff
+binary_microfluidic_mask:gelmask.tiff
+

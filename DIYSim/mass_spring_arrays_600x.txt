@@ -1,0 +1,8 @@
+Grid Parameters
+=====================
+space_size: 3000
+threshold_distance: 12
+spring_constant: 10
+mass_value: 1
+min_distance: 5
+initial_v: 5

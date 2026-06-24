@@ -1,0 +1,10 @@
+streamlit
+streamlit-drawable-canvas
+pillow
+tifffile
+numpy
+scipy
+matplotlib
+imageio
+opencv-python-headless
+tqdm

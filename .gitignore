@@ -1,0 +1,20 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Large/generated simulation assets. Keep these locally or move them to object
+# storage for production hosting.
+Simulation/**/*.tif
+Simulation/**/*.tiff
+DIYSim/*.tif
+DIYSim/*.tiff
+DIYSim/*.npz
+DIYSim/simviewer.ipynb
+
+# User-generated DIY exports.
+DIYSim/lightmask.png
+DIYSim/gelmask.png
+
