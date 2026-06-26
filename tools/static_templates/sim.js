@@ -136,7 +136,8 @@ function stopSim() {
   simRunning = false;
   if (simAnimation) cancelAnimationFrame(simAnimation);
   simAnimation = null;
-}\nfunction pauseSim() { stopSim(); setStatus(`Paused at frame ${simFrame.toLocaleString()}.`); }
+}
+function pauseSim() { stopSim(); setStatus(`Paused at frame ${simFrame.toLocaleString()}.`); }
 function resetSim() {
   stopSim();
   particles = [];
