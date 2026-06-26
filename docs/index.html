@@ -39,11 +39,11 @@
         <div>
           <p class="eyebrow">Browser Simulation</p>
           <h2>DIY Active Matter Pattern Builder</h2>
-          <p>Draw blue light activation regions and red PDMS wall mask regions, then run a browser-native mass-spring simulation directly on the site.</p>
+          <p>Draw blue light activation regions and red PDMS wall mask regions, then run a browser-native dense mass-spring simulation directly on the site.</p>
         </div>
         <div class="diy-note">
           <strong>Simulation runs on this website.</strong>
-          <span>The public site uses a lightweight browser mass-spring model so users can test custom masks without installing Python.</span>
+          <span>The browser model follows the original mask-and-spring workflow and renders a dense concentration-ratio heatmap.</span>
         </div>
       </div>
       <div class="diy-layout">
@@ -74,13 +74,13 @@
           </label>
           <label>
             Mass count
-            <input id="sim-particles" type="range" min="500" max="6000" step="500" value="2500" />
-            <span id="sim-particles-value">2500 masses</span>
+            <input id="sim-particles" type="range" min="6000" max="40000" step="2000" value="20000" />
+            <span id="sim-particles-value">20,000 masses</span>
           </label>
           <label>
             Activation strength
-            <input id="sim-strength" type="range" min="0" max="100" value="65" />
-            <span id="sim-strength-value">65%</span>
+            <input id="sim-strength" type="range" min="0" max="100" value="75" />
+            <span id="sim-strength-value">75%</span>
           </label>
           <label>
             Simulation speed
