@@ -11,11 +11,11 @@
     <div>
       <p class="eyebrow">Active Matter Demo</p>
       <h1>Active Matter Pump Simulations</h1>
-      <p>Browse active-matter pump designs, play simulation movies, and build custom light and wall masks.</p>
+      <p>Browse active-matter pump designs, play simulation movies, and run custom browser simulations.</p>
     </div>
     <div class="topbar-actions">
       <input id="search" type="search" placeholder="Search simulations" aria-label="Search simulations" />
-      <button id="diy-open" class="primary-button" type="button">DIY Pattern Builder</button>
+      <button id="diy-open" class="primary-button" type="button">Run a DIY simulation</button>
     </div>
   </header>
   <main>
@@ -37,17 +37,17 @@
       <button id="diy-back" class="back-button" type="button">Back to simulations</button>
       <div class="diy-header">
         <div>
-          <p class="eyebrow">Browser Tool</p>
+          <p class="eyebrow">Browser Simulation</p>
           <h2>DIY Active Matter Pattern Builder</h2>
-          <p>Draw blue light activation regions and red PDMS wall mask regions on a 1280×800 canvas. Export masks for the local Streamlit simulator.</p>
+          <p>Draw blue light activation regions and red PDMS wall mask regions, then run a browser-native active-particle simulation directly on the site.</p>
         </div>
         <div class="diy-note">
-          <strong>Simulation runs locally.</strong>
-          <span>The public static site can build and export masks. Running the Python simulation still requires the local Streamlit app.</span>
+          <strong>Simulation runs on this website.</strong>
+          <span>The public site uses a lightweight browser particle model so users can test custom masks without installing Python.</span>
         </div>
       </div>
       <div class="diy-layout">
-        <aside class="diy-controls" aria-label="DIY drawing controls">
+        <aside class="diy-controls" aria-label="DIY drawing and simulation controls">
           <label>
             Drawing layer
             <select id="diy-mode">
@@ -72,17 +72,45 @@
             <input id="diy-brush" type="range" min="2" max="60" value="16" />
             <span id="diy-brush-value">16 px</span>
           </label>
+          <label>
+            Particle count
+            <input id="sim-particles" type="range" min="500" max="6000" step="500" value="2500" />
+            <span id="sim-particles-value">2500 particles</span>
+          </label>
+          <label>
+            Activation strength
+            <input id="sim-strength" type="range" min="0" max="100" value="65" />
+            <span id="sim-strength-value">65%</span>
+          </label>
+          <label>
+            Simulation speed
+            <input id="sim-speed" type="range" min="1" max="8" value="4" />
+            <span id="sim-speed-value">4 steps/frame</span>
+          </label>
           <div class="button-row">
-            <button id="diy-clear" class="secondary-button" type="button">Clear canvas</button>
+            <button id="diy-clear" class="secondary-button" type="button">Clear masks</button>
           </div>
           <div class="button-row">
-            <button id="diy-export-light" class="primary-button" type="button">Export lightmask.png</button>
+            <button id="sim-run" class="primary-button" type="button">Run simulation</button>
+            <button id="sim-pause" class="secondary-button" type="button">Pause</button>
+            <button id="sim-reset" class="secondary-button" type="button">Reset</button>
+          </div>
+          <div class="button-row">
+            <button id="diy-export-light" class="secondary-button" type="button">Export lightmask.png</button>
             <button id="diy-export-gel" class="secondary-button" type="button">Export gelmask.png</button>
+            <button id="sim-export-frame" class="secondary-button" type="button">Export result frame</button>
           </div>
-          <p class="helper-text">Use blue for light input and red for wall regions. The gel mask export is white where flow is allowed and black where red walls were drawn.</p>
+          <p id="sim-status" class="helper-text">Draw masks, then click Run simulation.</p>
         </aside>
         <div class="diy-stage">
-          <canvas id="diy-canvas" width="1280" height="800" aria-label="DIY pattern drawing canvas"></canvas>
+          <div class="canvas-panel">
+            <h3>Input masks</h3>
+            <canvas id="diy-canvas" width="1280" height="800" aria-label="DIY pattern drawing canvas"></canvas>
+          </div>
+          <div class="canvas-panel">
+            <h3>Simulation output</h3>
+            <canvas id="sim-canvas" width="1280" height="800" aria-label="DIY simulation result canvas"></canvas>
+          </div>
         </div>
       </div>
     </section>
