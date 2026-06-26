@@ -9,13 +9,14 @@
 <body>
   <header class="topbar">
     <div>
+      <p class="eyebrow">Active Matter Demo</p>
       <h1>Active Matter Pump Simulations</h1>
       <p>Browse active-matter pump designs and play simulation movies in your browser.</p>
     </div>
-    <input id="search" type="search" placeholder="Search simulations" />
+    <input id="search" type="search" placeholder="Search simulations" aria-label="Search simulations" />
   </header>
   <main>
-    <section id="categories" class="category-grid"></section>
+    <section id="categories" class="category-grid" aria-live="polite"></section>
     <section id="viewer" class="viewer" hidden>
       <button id="back" class="back-button">Back</button>
       <div class="viewer-layout">
