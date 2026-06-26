@@ -35,11 +35,11 @@ function simulationCountLabel(count) {
 function diyLaunchCard() {
   return `<button class="diy-launch-card" type="button" data-action="open-diy">
     <span>
-      <span class="eyebrow">Create custom inputs</span>
+      <span class="eyebrow">Run a custom simulation</span>
       <h2>DIY Pattern Builder</h2>
-      <p>Draw light activation and PDMS wall masks directly in the browser, then export masks for local simulation.</p>
+      <p>Draw light activation and PDMS wall masks, then run a browser simulation directly on the site.</p>
     </span>
-    <span class="primary-button">Open builder</span>
+    <span class="primary-button">Open simulator</span>
   </button>`;
 }
 
@@ -142,48 +142,30 @@ function createLayerCanvas() {
   return canvas;
 }
 
-const diy = {
-  light: createLayerCanvas(),
-  mask: createLayerCanvas(),
-  drawing: false,
-  start: null,
-  last: null,
-};
+const diy = { light: createLayerCanvas(), mask: createLayerCanvas(), drawing: false, start: null, last: null };
 
 function getDiyPoint(event) {
   const canvas = $("diy-canvas");
   const rect = canvas.getBoundingClientRect();
-  const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-  const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-  return {
-    x: (clientX - rect.left) * (DIY_WIDTH / rect.width),
-    y: (clientY - rect.top) * (DIY_HEIGHT / rect.height),
-  };
+  return { x: (event.clientX - rect.left) * (DIY_WIDTH / rect.width), y: (event.clientY - rect.top) * (DIY_HEIGHT / rect.height) };
 }
 
 function activeLayerContext() {
   const layer = $("diy-mode").value === "light" ? diy.light : diy.mask;
   return layer.getContext("2d");
 }
-
-function activeColor() {
-  return $("diy-mode").value === "light" ? "#13AEEC" : "#FF3B30";
-}
-
+function activeColor() { return $("diy-mode").value === "light" ? "#13AEEC" : "#FF3B30"; }
 function drawGuide(ctx) {
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, DIY_WIDTH, DIY_HEIGHT);
-  ctx.fillStyle = "rgba(128, 128, 128, 0.25)";
+  ctx.fillStyle = "rgba(128,128,128,0.25)";
   ctx.strokeStyle = "#9ca3af";
   ctx.lineWidth = 2;
   ctx.setLineDash([6, 6]);
-  ctx.beginPath();
-  ctx.roundRect(274.5, 34.5, 731, 731, 8);
-  ctx.fill();
-  ctx.stroke();
+  ctx.strokeRect(274.5, 34.5, 731, 731);
+  ctx.fillRect(274.5, 34.5, 731, 731);
   ctx.setLineDash([]);
 }
-
 function renderDiyCanvas(previewShape = null) {
   const canvas = $("diy-canvas");
   const ctx = canvas.getContext("2d");
@@ -192,7 +174,6 @@ function renderDiyCanvas(previewShape = null) {
   ctx.drawImage(diy.mask, 0, 0);
   if (previewShape) drawShape(ctx, previewShape, true);
 }
-
 function drawLine(from, to) {
   const ctx = activeLayerContext();
   ctx.strokeStyle = activeColor();
@@ -204,7 +185,6 @@ function drawLine(from, to) {
   ctx.lineTo(to.x, to.y);
   ctx.stroke();
 }
-
 function drawShape(ctx, shape, isPreview = false) {
   const { start, end, tool, filled, color, brush } = shape;
   ctx.save();
@@ -217,79 +197,34 @@ function drawShape(ctx, shape, isPreview = false) {
   const w = Math.abs(end.x - start.x);
   const h = Math.abs(end.y - start.y);
   if (tool === "rect") {
-    if (filled) ctx.fillRect(x, y, w, h);
-    else ctx.strokeRect(x, y, w, h);
+    if (filled) ctx.fillRect(x, y, w, h); else ctx.strokeRect(x, y, w, h);
   } else if (tool === "circle") {
     const r = Math.sqrt(w * w + h * h) / 2;
-    const cx = (start.x + end.x) / 2;
-    const cy = (start.y + end.y) / 2;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    if (filled) ctx.fill();
-    else ctx.stroke();
+    ctx.arc((start.x + end.x) / 2, (start.y + end.y) / 2, r, 0, Math.PI * 2);
+    if (filled) ctx.fill(); else ctx.stroke();
   }
   ctx.restore();
 }
-
 function commitShape(end) {
   const tool = $("diy-tool").value;
   if (tool === "draw" || !diy.start) return;
-  const ctx = activeLayerContext();
-  drawShape(ctx, {
-    start: diy.start,
-    end,
-    tool,
-    filled: $("diy-filled").checked,
-    color: activeColor(),
-    brush: Number($("diy-brush").value),
-  });
+  drawShape(activeLayerContext(), { start: diy.start, end, tool, filled: $("diy-filled").checked, color: activeColor(), brush: Number($("diy-brush").value) });
   renderDiyCanvas();
 }
-
-function pointerDown(event) {
-  event.preventDefault();
-  diy.drawing = true;
-  diy.start = getDiyPoint(event);
-  diy.last = diy.start;
-}
-
+function pointerDown(event) { event.preventDefault(); diy.drawing = true; diy.start = getDiyPoint(event); diy.last = diy.start; }
 function pointerMove(event) {
   if (!diy.drawing) return;
   event.preventDefault();
   const point = getDiyPoint(event);
-  if ($("diy-tool").value === "draw") {
-    drawLine(diy.last, point);
-    diy.last = point;
-    renderDiyCanvas();
-  } else {
-    renderDiyCanvas({
-      start: diy.start,
-      end: point,
-      tool: $("diy-tool").value,
-      filled: $("diy-filled").checked,
-      color: activeColor(),
-      brush: Number($("diy-brush").value),
-    });
-  }
+  if ($("diy-tool").value === "draw") { drawLine(diy.last, point); diy.last = point; renderDiyCanvas(); }
+  else renderDiyCanvas({ start: diy.start, end: point, tool: $("diy-tool").value, filled: $("diy-filled").checked, color: activeColor(), brush: Number($("diy-brush").value) });
 }
-
-function pointerUp(event) {
-  if (!diy.drawing) return;
-  event.preventDefault();
-  const point = getDiyPoint(event.changedTouches ? event.changedTouches[0] : event);
-  commitShape(point);
-  diy.drawing = false;
-  diy.start = null;
-  diy.last = null;
-}
-
+function pointerUp(event) { if (!diy.drawing) return; event.preventDefault(); commitShape(getDiyPoint(event)); diy.drawing = false; diy.start = null; diy.last = null; }
 function clearDiyCanvas() {
-  [diy.light, diy.mask].forEach((layer) => {
-    layer.getContext("2d").clearRect(0, 0, DIY_WIDTH, DIY_HEIGHT);
-  });
+  [diy.light, diy.mask].forEach((layer) => layer.getContext("2d").clearRect(0, 0, DIY_WIDTH, DIY_HEIGHT));
   renderDiyCanvas();
 }
-
 function buildMaskDownload(kind) {
   const output = createLayerCanvas();
   const out = output.getContext("2d");
@@ -297,13 +232,8 @@ function buildMaskDownload(kind) {
   const data = source.getContext("2d").getImageData(0, 0, DIY_WIDTH, DIY_HEIGHT);
   const result = out.createImageData(DIY_WIDTH, DIY_HEIGHT);
   for (let i = 0; i < data.data.length; i += 4) {
-    const alpha = data.data[i + 3];
-    const on = alpha > 0;
-    const value = kind === "light" ? (on ? 255 : 0) : (on ? 0 : 255);
-    result.data[i] = value;
-    result.data[i + 1] = value;
-    result.data[i + 2] = value;
-    result.data[i + 3] = 255;
+    const value = kind === "light" ? (data.data[i + 3] > 0 ? 255 : 0) : (data.data[i + 3] > 0 ? 0 : 255);
+    result.data[i] = value; result.data[i + 1] = value; result.data[i + 2] = value; result.data[i + 3] = 255;
   }
   out.putImageData(result, 0, 0);
   const link = document.createElement("a");
@@ -311,48 +241,26 @@ function buildMaskDownload(kind) {
   link.download = kind === "light" ? "lightmask.png" : "gelmask.png";
   link.click();
 }
-
 function initDiyCanvas() {
-  if (state.diyReady) {
-    renderDiyCanvas();
-    return;
-  }
+  if (state.diyReady) { renderDiyCanvas(); return; }
   const canvas = $("diy-canvas");
   canvas.addEventListener("pointerdown", pointerDown);
   canvas.addEventListener("pointermove", pointerMove);
   canvas.addEventListener("pointerup", pointerUp);
-  canvas.addEventListener("pointerleave", (event) => {
-    if (diy.drawing) pointerUp(event);
-  });
+  canvas.addEventListener("pointerleave", (event) => { if (diy.drawing) pointerUp(event); });
   $("diy-clear").addEventListener("click", clearDiyCanvas);
   $("diy-export-light").addEventListener("click", () => buildMaskDownload("light"));
   $("diy-export-gel").addEventListener("click", () => buildMaskDownload("gel"));
-  $("diy-brush").addEventListener("input", (event) => {
-    $("diy-brush-value").textContent = `${event.target.value} px`;
-  });
+  $("diy-brush").addEventListener("input", (event) => { $("diy-brush-value").textContent = `${event.target.value} px`; });
   renderDiyCanvas();
   state.diyReady = true;
 }
-
 $("back").addEventListener("click", renderCategories);
 $("diy-back").addEventListener("click", renderCategories);
 $("diy-open").addEventListener("click", openDiy);
-$("search").addEventListener("input", (event) => {
-  state.query = event.target.value.trim();
-  renderCategories();
-});
-
+$("search").addEventListener("input", (event) => { state.query = event.target.value.trim(); renderCategories(); });
 showStatus("loading", "Loading simulations", "Fetching the latest simulation manifest.");
 fetch("data/manifest.json")
-  .then((res) => {
-    if (!res.ok) throw new Error(`Manifest request failed with status ${res.status}`);
-    return res.json();
-  })
-  .then((manifest) => {
-    if (!Array.isArray(manifest)) throw new Error("Manifest JSON is not an array.");
-    state.manifest = manifest.filter((item) => item && item.category && item.title && item.video && item.poster);
-    renderCategories();
-  })
-  .catch((error) => {
-    showStatus("error", "Could not load simulations", error.message || "The simulation manifest could not be loaded.");
-  });
+  .then((res) => { if (!res.ok) throw new Error(`Manifest request failed with status ${res.status}`); return res.json(); })
+  .then((manifest) => { if (!Array.isArray(manifest)) throw new Error("Manifest JSON is not an array."); state.manifest = manifest.filter((item) => item && item.category && item.title && item.video && item.poster); renderCategories(); })
+  .catch((error) => { showStatus("error", "Could not load simulations", error.message || "The simulation manifest could not be loaded."); });
