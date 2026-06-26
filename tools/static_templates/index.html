@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Active Matter Pump Simulations</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Active Matter Demo</p>
+      <h1>Active Matter Pump Simulations</h1>
+      <p>Browse active-matter pump designs, play simulation movies, and build custom light and wall masks.</p>
+    </div>
+    <div class="topbar-actions">
+      <input id="search" type="search" placeholder="Search simulations" aria-label="Search simulations" />
+      <button id="diy-open" class="primary-button" type="button">DIY Pattern Builder</button>
+    </div>
+  </header>
+  <main>
+    <section id="categories" class="category-grid" aria-live="polite"></section>
+    <section id="viewer" class="viewer" hidden>
+      <button id="back" class="back-button" type="button">Back</button>
+      <div class="viewer-layout">
+        <aside>
+          <h2 id="viewer-title"></h2>
+          <p id="viewer-meta"></p>
+          <div id="video-list" class="video-list"></div>
+        </aside>
+        <div class="stage">
+          <video id="video" controls playsinline preload="metadata"></video>
+        </div>
+      </div>
+    </section>
+    <section id="diy" class="diy" hidden>
+      <button id="diy-back" class="back-button" type="button">Back to simulations</button>
+      <div class="diy-header">
+        <div>
+          <p class="eyebrow">Browser Tool</p>
+          <h2>DIY Active Matter Pattern Builder</h2>
+          <p>Draw blue light activation regions and red PDMS wall mask regions on a 1280×800 canvas. Export masks for the local Streamlit simulator.</p>
+        </div>
+        <div class="diy-note">
+          <strong>Simulation runs locally.</strong>
+          <span>The public static site can build and export masks. Running the Python simulation still requires the local Streamlit app.</span>
+        </div>
+      </div>
+      <div class="diy-layout">
+        <aside class="diy-controls" aria-label="DIY drawing controls">
+          <label>
+            Drawing layer
+            <select id="diy-mode">
+              <option value="light">Draw Light (blue)</option>
+              <option value="mask">Draw Mask (red)</option>
+            </select>
+          </label>
+          <label>
+            Tool
+            <select id="diy-tool">
+              <option value="draw">Free draw</option>
+              <option value="rect">Rectangle/Square</option>
+              <option value="circle">Circle</option>
+            </select>
+          </label>
+          <label class="checkbox-row">
+            <input id="diy-filled" type="checkbox" />
+            Fill shape
+          </label>
+          <label>
+            Brush/Stroke size
+            <input id="diy-brush" type="range" min="2" max="60" value="16" />
+            <span id="diy-brush-value">16 px</span>
+          </label>
+          <div class="button-row">
+            <button id="diy-clear" class="secondary-button" type="button">Clear canvas</button>
+          </div>
+          <div class="button-row">
+            <button id="diy-export-light" class="primary-button" type="button">Export lightmask.png</button>
+            <button id="diy-export-gel" class="secondary-button" type="button">Export gelmask.png</button>
+          </div>
+          <p class="helper-text">Use blue for light input and red for wall regions. The gel mask export is white where flow is allowed and black where red walls were drawn.</p>
+        </aside>
+        <div class="diy-stage">
+          <canvas id="diy-canvas" width="1280" height="800" aria-label="DIY pattern drawing canvas"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
