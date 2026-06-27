@@ -1,0 +1,1 @@
+{"space_size":3000,"threshold_distance":12,"spring_constant":10,"mass_value":1,"min_distance":5,"initial_v":5,"num_steps":100,"dt":0.03,"activated_rest_length":0.3,"bdrate":0.08545,"cdrate":-0.008405,"activated_spring_constant_multiplier":25,"max_length_multiplier":2.5,"damping":0.99,"resis":10,"noise":0.1,"grid_name":"mass_spring_arrays_600x"}
