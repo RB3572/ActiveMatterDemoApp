@@ -39,11 +39,11 @@
         <div>
           <p class="eyebrow">Browser Simulation</p>
           <h2>DIY Active Matter Pattern Builder</h2>
-          <p>Draw blue light activation regions and red PDMS wall mask regions, then run a browser-native dense mass-spring simulation directly on the site.</p>
+          <p>Draw blue light activation regions and red PDMS wall mask regions, then run a browser-native port of the original mask-spring simulation.</p>
         </div>
         <div class="diy-note">
           <strong>Simulation runs on this website.</strong>
-          <span>The browser model follows the original mask-and-spring workflow and renders a dense concentration-ratio heatmap.</span>
+          <span>The browser model follows the original 3000×3000 mask transform, spring activation, no-slip, pruning, 100-step dynamics, and density-ratio renderer.</span>
         </div>
       </div>
       <div class="diy-layout">
@@ -74,18 +74,18 @@
           </label>
           <label>
             Mass count
-            <input id="sim-particles" type="range" min="6000" max="40000" step="2000" value="20000" />
-            <span id="sim-particles-value">20,000 masses</span>
+            <input id="sim-particles" type="range" min="10000" max="160000" step="10000" value="90000" />
+            <span id="sim-particles-value">90,000 masses</span>
           </label>
           <label>
             Activation strength
-            <input id="sim-strength" type="range" min="0" max="100" value="75" />
-            <span id="sim-strength-value">75%</span>
+            <input id="sim-strength" type="range" min="0" max="100" value="100" />
+            <span id="sim-strength-value">100%</span>
           </label>
           <label>
             Simulation speed
-            <input id="sim-speed" type="range" min="1" max="8" value="4" />
-            <span id="sim-speed-value">4 steps/frame</span>
+            <input id="sim-speed" type="range" min="1" max="8" value="1" />
+            <span id="sim-speed-value">1 steps/frame</span>
           </label>
           <div class="button-row">
             <button id="diy-clear" class="secondary-button" type="button">Clear masks</button>
