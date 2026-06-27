@@ -52,7 +52,7 @@ function maskIndexToCanvas(col, row) {
   const resizedCol = CROP_COL0 + cropCol;
   const resizedRow = CROP_ROW0 + cropRow;
   const x = Math.floor(resizedCol / FACTOR_X);
-  const y = Math.floor((SIM_H - 1) - resizedRow / FACTOR_Y);
+  const y = Math.floor(resizedRow / FACTOR_Y);
   if (x < 0 || x >= SIM_W || y < 0 || y >= SIM_H) return null;
   return { x, y };
 }
@@ -82,7 +82,6 @@ function readMasksFromInputCanvas() {
   wallMask = new Uint8Array(SPACE_SIZE * SPACE_SIZE);
   let lightCount = 0;
   let wallCount = 0;
-
   for (let row = PROJECTOR_PAD; row < PROJECTOR_PAD + PROJECTOR_SIZE; row += 1) {
     for (let col = PROJECTOR_PAD; col < PROJECTOR_PAD + PROJECTOR_SIZE; col += 1) {
       const pt = maskIndexToCanvas(col, row);
@@ -105,6 +104,16 @@ function maskValue(mask, row, col) {
 }
 function lightAtMask(row, col) { return maskValue(lightMask, row, col); }
 function wallAtMask(row, col) { return maskValue(wallMask, row, col); }
+function lightNearMask(row, col, radius = 4) {
+  const rr = Math.round(row);
+  const cc = Math.round(col);
+  for (let dy = -radius; dy <= radius; dy += 1) {
+    for (let dx = -radius; dx <= radius; dx += 1) {
+      if (dx * dx + dy * dy <= radius * radius && lightAtMask(rr + dy, cc + dx)) return true;
+    }
+  }
+  return false;
+}
 function noSlipAtCoord(x, y) {
   const { row, col } = coordToMaskIndex(x, y);
   for (let dy = -3; dy <= 3; dy += 1) {
@@ -141,7 +150,6 @@ function buildMassSpringNetwork() {
   const rawY = new Float32Array(rawCount);
   const nodeMap = new Int32Array(rawCount);
   nodeMap.fill(-1);
-
   let alive = 0;
   for (let gy = 0; gy < ny; gy += 1) {
     for (let gx = 0; gx < nx; gx += 1) {
@@ -154,14 +162,12 @@ function buildMassSpringNetwork() {
       }
     }
   }
-
   const x = new Float32Array(alive);
   const y = new Float32Array(alive);
   const vx = new Float32Array(alive);
   const vy = new Float32Array(alive);
   const ax = new Float32Array(alive);
   const ay = new Float32Array(alive);
-
   for (let i = 0; i < rawCount; i += 1) {
     const j = nodeMap[i];
     if (j >= 0) {
@@ -169,7 +175,6 @@ function buildMassSpringNetwork() {
       y[j] = rawY[i] + gaussianNoise() * spacing * 0.015;
     }
   }
-
   const springA = [];
   const springB = [];
   const restLengths = [];
@@ -183,7 +188,6 @@ function buildMassSpringNetwork() {
       if (gx > 0 && gy + 1 < ny) addSpring(springA, springB, restLengths, springKs, id, nodeId(gx - 1, gy + 1, nx), rawX, rawY, nodeMap);
     }
   }
-
   return {
     nx, ny, spacing, alive,
     x, y, vx, vy, ax, ay,
@@ -195,6 +199,17 @@ function buildMassSpringNetwork() {
     maxLength: spacing * Math.SQRT2 * MAX_LENGTH_MULTIPLIER,
     activatedK: DEFAULT_K * ACTIVATED_K_MULTIPLIER
   };
+}
+
+function springSegmentHitsLight(aRow, aCol, bRow, bCol) {
+  const samples = 7;
+  for (let i = 0; i <= samples; i += 1) {
+    const t = i / samples;
+    const row = aRow + (bRow - aRow) * t;
+    const col = aCol + (bCol - aCol) * t;
+    if (lightNearMask(row, col, 4)) return true;
+  }
+  return false;
 }
 
 function activateSpringsFromMaskOriginal(step) {
@@ -212,7 +227,6 @@ function activateSpringsFromMaskOriginal(step) {
   const strength = Number(simEl("sim-strength")?.value || 100) / 100;
   const activatedK = DEFAULT_K + (network.activatedK - DEFAULT_K) * strength;
   const activatedRest = ACTIVATED_REST_LENGTH + (1 - strength) * network.spacing;
-
   for (let s = 0; s < network.springCount; s += 1) {
     const a = network.springA[s];
     const b = network.springB[s];
@@ -220,8 +234,7 @@ function activateSpringsFromMaskOriginal(step) {
     const aRow = clamp(Math.floor((network.y[a] - minY) / spanY * (SPACE_SIZE - 1)), 0, SPACE_SIZE - 1);
     const bCol = clamp(Math.floor((network.x[b] - minX) / spanX * (SPACE_SIZE - 1)), 0, SPACE_SIZE - 1);
     const bRow = clamp(Math.floor((network.y[b] - minY) / spanY * (SPACE_SIZE - 1)), 0, SPACE_SIZE - 1);
-    if (lightAtMask(aRow, aCol) || lightAtMask(bRow, bCol)) {
-      // The original run path calls method='exp', which falls through to direct assignment.
+    if (springSegmentHitsLight(aRow, aCol, bRow, bCol)) {
       network.springKs[s] = activatedK;
       network.restLengths[s] = activatedRest;
     }
@@ -232,7 +245,6 @@ function updateMassDynamicsOriginal() {
   const n = network.alive;
   network.ax.fill(0);
   network.ay.fill(0);
-
   let write = 0;
   for (let s = 0; s < network.springCount; s += 1) {
     const a = network.springA[s];
@@ -241,7 +253,6 @@ function updateMassDynamicsOriginal() {
     const dy = network.y[b] - network.y[a];
     const dist = Math.hypot(dx, dy);
     if (dist > network.maxLength) continue;
-
     if (write !== s) {
       network.springA[write] = a;
       network.springB[write] = b;
@@ -249,7 +260,6 @@ function updateMassDynamicsOriginal() {
       network.restLengths[write] = network.restLengths[s];
     }
     write += 1;
-
     const inv = 1 / (dist + 1e-8);
     const forceMag = network.springKs[s] * (dist - network.restLengths[s]);
     const fx = dx * inv * forceMag;
@@ -260,7 +270,6 @@ function updateMassDynamicsOriginal() {
     network.ay[b] -= fy;
   }
   network.springCount = write;
-
   for (let i = 0; i < n; i += 1) {
     network.ax[i] += -RESISTANCE * network.vx[i];
     network.ay[i] += -RESISTANCE * network.vy[i];
@@ -276,7 +285,6 @@ function updateMassDynamicsOriginal() {
     network.y[i] = clamp(network.y[i] + gaussianNoise() * NOISE, -HALF_SPACE, HALF_SPACE);
   }
 }
-
 function stepMassSpring() {
   if (!network) return;
   activateSpringsFromMaskOriginal(simFrame);
@@ -291,13 +299,10 @@ function depositDensity(density, x, y) {
   for (let dy = 0; dy <= 1; dy += 1) {
     for (let dx = 0; dx <= 1; dx += 1) {
       const px = ix + dx, py = iy + dy;
-      if (px >= 0 && px < DENSITY_W && py >= 0 && py < DENSITY_H) {
-        density[py * DENSITY_W + px] += (dx ? fx : 1 - fx) * (dy ? fy : 1 - fy);
-      }
+      if (px >= 0 && px < DENSITY_W && py >= 0 && py < DENSITY_H) density[py * DENSITY_W + px] += (dx ? fx : 1 - fx) * (dy ? fy : 1 - fy);
     }
   }
 }
-
 function blurDensity(field) {
   const temp = new Float32Array(field.length);
   for (let y = 0; y < DENSITY_H; y += 1) {
@@ -327,7 +332,6 @@ function blurDensity(field) {
     }
   }
 }
-
 function bwrAt(t) {
   const v = clamp(t, 0, 1);
   if (v < 0.5) {
@@ -358,12 +362,7 @@ function densityPixelToMask(row, col) {
 function referenceDensity(density) {
   const corner = Math.max(8, Math.round(DENSITY_W * 0.05));
   let sum = 0, count = 0;
-  for (let y = 0; y < corner; y += 1) {
-    for (let x = 0; x < corner; x += 1) {
-      sum += density[y * DENSITY_W + x];
-      count += 1;
-    }
-  }
+  for (let y = 0; y < corner; y += 1) for (let x = 0; x < corner; x += 1) { sum += density[y * DENSITY_W + x]; count += 1; }
   let ref = sum / Math.max(1, count);
   if (!Number.isFinite(ref) || ref <= 0) {
     let maxVal = 0;
@@ -372,7 +371,6 @@ function referenceDensity(density) {
   }
   return ref;
 }
-
 function drawColorbar(ctx) {
   const grad = ctx.createLinearGradient(0, BAR_Y + BAR_H, 0, BAR_Y);
   grad.addColorStop(0, "rgb(0,0,255)");
@@ -404,7 +402,6 @@ function drawColorbar(ctx) {
   ctx.fillText("MT concentration ratio", -118, 0);
   ctx.restore();
 }
-
 function drawMassSpringFrame() {
   const canvas = simEl("sim-canvas");
   const ctx = canvas.getContext("2d");
@@ -418,7 +415,7 @@ function drawMassSpringFrame() {
       const p = y * DENSITY_W + x;
       let rgb = colorForRatio(density[p] / ref);
       const { maskRow, maskCol } = densityPixelToMask(y, x);
-      if (lightAtMask(SPACE_SIZE - 1 - maskRow, maskCol)) rgb = blend(rgb, [115, 190, 80], 0.20);
+      if (lightAtMask(maskRow, maskCol)) rgb = blend(rgb, [115, 190, 80], 0.20);
       if (wallAtMask(maskRow, maskCol)) rgb = blend(rgb, [35, 45, 52], 0.50);
       const o = p * 4;
       image.data[o] = rgb[0];
@@ -427,7 +424,6 @@ function drawMassSpringFrame() {
       image.data[o + 3] = 255;
     }
   }
-
   const heatCanvas = document.createElement("canvas");
   heatCanvas.width = DENSITY_W;
   heatCanvas.height = DENSITY_H;
@@ -446,15 +442,12 @@ function drawMassSpringFrame() {
   ctx.strokeRect(PLOT_X, PLOT_Y, PLOT_SIZE, PLOT_SIZE);
   drawColorbar(ctx);
 }
-
 function loop() {
   if (!simRunning) return;
   const steps = Number(simEl("sim-speed")?.value || 1);
   for (let i = 0; i < steps; i += 1) stepMassSpring();
   drawMassSpringFrame();
-  if (simFrame % 10 === 0) {
-    setStatus(`Running original-style simulation. Step ${simFrame.toLocaleString()} of 100. ${network.alive.toLocaleString()} masses, ${network.springCount.toLocaleString()} active springs.`);
-  }
+  if (simFrame % 10 === 0) setStatus(`Running original-style simulation. Step ${simFrame.toLocaleString()} of 100. ${network.alive.toLocaleString()} masses, ${network.springCount.toLocaleString()} active springs.`);
   if (simFrame >= 100) {
     pauseSim();
     setStatus(`Completed original 100-step simulation. ${network.alive.toLocaleString()} masses, ${network.springCount.toLocaleString()} remaining springs.`);
