@@ -1,14 +1,20 @@
 const SIM_W = 1280;
 const SIM_H = 800;
-const PLOT_SIZE = 760;
-const PLOT_X = 190;
-const PLOT_Y = 20;
-const BAR_X = 985;
-const BAR_Y = 90;
-const BAR_W = 26;
-const BAR_H = 610;
-const DENSITY_W = 260;
-const DENSITY_H = 260;
+const FIELD_X = 240;
+const FIELD_Y = 0;
+const FIELD_SIZE = 800;
+const PROJECTOR_X = 274.5;
+const PROJECTOR_Y = 34.5;
+const PROJECTOR_SIZE = 731;
+const PLOT_SIZE = 700;
+const PLOT_X = 210;
+const PLOT_Y = 64;
+const BAR_X = 945;
+const BAR_Y = 64;
+const BAR_W = 32;
+const BAR_H = 700;
+const DENSITY_W = 300;
+const DENSITY_H = 300;
 
 let simRunning = false;
 let simAnimation = null;
@@ -19,6 +25,13 @@ let network = null;
 
 function simEl(id) { return document.getElementById(id); }
 function setStatus(message) { const el = simEl("sim-status"); if (el) el.textContent = message; }
+function inField(x, y) { return x >= FIELD_X && x <= FIELD_X + FIELD_SIZE && y >= FIELD_Y && y <= FIELD_Y + FIELD_SIZE; }
+function inProjector(x, y) { return x >= PROJECTOR_X && x <= PROJECTOR_X + PROJECTOR_SIZE && y >= PROJECTOR_Y && y <= PROJECTOR_Y + PROJECTOR_SIZE; }
+function fieldToDensityX(x) { return (x - FIELD_X) / FIELD_SIZE * DENSITY_W - 0.5; }
+function fieldToDensityY(y) { return (y - FIELD_Y) / FIELD_SIZE * DENSITY_H - 0.5; }
+function densityToFieldX(x) { return FIELD_X + (x + 0.5) * FIELD_SIZE / DENSITY_W; }
+function densityToFieldY(y) { return FIELD_Y + (y + 0.5) * FIELD_SIZE / DENSITY_H; }
+
 function clearOutput(message = "Simulation output will appear here.") {
   const canvas = simEl("sim-canvas");
   if (!canvas) return;
@@ -30,6 +43,7 @@ function clearOutput(message = "Simulation output will appear here.") {
   ctx.fillText(message, 48, 80);
   setStatus(message);
 }
+
 function readMasksFromInputCanvas() {
   const ctx = simEl("diy-canvas").getContext("2d");
   const data = ctx.getImageData(0, 0, SIM_W, SIM_H).data;
@@ -37,12 +51,16 @@ function readMasksFromInputCanvas() {
   wallMask = new Uint8Array(SIM_W * SIM_H);
   let lightCount = 0;
   let wallCount = 0;
-  for (let i = 0, p = 0; i < data.length; i += 4, p += 1) {
-    const r = data[i], g = data[i + 1], b = data[i + 2];
-    const isLight = b > 150 && g > 100 && r < 95;
-    const isWall = r > 175 && g < 130 && b < 130;
-    if (isLight) { lightMask[p] = 1; lightCount += 1; }
-    if (isWall) { wallMask[p] = 1; wallCount += 1; }
+  for (let y = 0; y < SIM_H; y += 1) {
+    for (let x = 0; x < SIM_W; x += 1) {
+      const p = y * SIM_W + x;
+      const i = p * 4;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const isLight = b > 150 && g > 100 && r < 95 && inProjector(x, y);
+      const isWall = r > 175 && g < 130 && b < 130 && inField(x, y);
+      if (isLight) { lightMask[p] = 1; lightCount += 1; }
+      if (isWall) { wallMask[p] = 1; wallCount += 1; }
+    }
   }
   return { lightCount, wallCount };
 }
@@ -51,14 +69,14 @@ function maskIndex(x, y) {
   const yy = Math.max(0, Math.min(SIM_H - 1, Math.floor(y)));
   return yy * SIM_W + xx;
 }
-function wallAt(x, y) { if (x < 0 || x >= SIM_W || y < 0 || y >= SIM_H) return true; return wallMask && wallMask[maskIndex(x, y)] === 1; }
-function lightAt(x, y) { if (!lightMask || x < 0 || x >= SIM_W || y < 0 || y >= SIM_H) return 0; return lightMask[maskIndex(x, y)]; }
+function wallAt(x, y) { if (!inField(x, y)) return true; return wallMask && wallMask[maskIndex(x, y)] === 1; }
+function lightAt(x, y) { if (!lightMask || !inProjector(x, y)) return 0; return lightMask[maskIndex(x, y)]; }
 function nodeId(x, y, nx) { return y * nx + x; }
 function sliderMassTarget() { return Number(simEl("sim-particles")?.value || 20000); }
 function targetGridFromSlider() {
   const requested = Math.max(6000, sliderMassTarget());
-  const nx = Math.max(95, Math.min(245, Math.round(Math.sqrt(requested * SIM_W / SIM_H))));
-  const ny = Math.max(60, Math.min(155, Math.round(nx * SIM_H / SIM_W)));
+  const nx = Math.max(90, Math.min(230, Math.round(Math.sqrt(requested))));
+  const ny = nx;
   return { nx, ny };
 }
 function addSpring(springs, a, b, rawX, rawY, nodeMap, kind = 1) {
@@ -68,7 +86,7 @@ function addSpring(springs, a, b, rawX, rawY, nodeMap, kind = 1) {
   springs.push({ a: ia, b: ib, rest: Math.hypot(dx, dy) || 1, kind });
 }
 function depositDensity(density, x, y) {
-  const gx = x / SIM_W * DENSITY_W - 0.5, gy = y / SIM_H * DENSITY_H - 0.5;
+  const gx = fieldToDensityX(x), gy = fieldToDensityY(y);
   const ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy;
   for (let dy = 0; dy <= 1; dy += 1) for (let dx = 0; dx <= 1; dx += 1) {
     const px = ix + dx, py = iy + dy;
@@ -100,16 +118,17 @@ function blurDensity(field, passes = 2) {
     }
   }
 }
+
 function buildMassSpringNetwork() {
   const { nx, ny } = targetGridFromSlider();
-  const spacingX = SIM_W / (nx - 1), spacingY = SIM_H / (ny - 1);
+  const spacing = FIELD_SIZE / (nx - 1);
   const rawCount = nx * ny;
   const rawX = new Float32Array(rawCount), rawY = new Float32Array(rawCount), blocked = new Uint8Array(rawCount);
   for (let gy = 0; gy < ny; gy += 1) {
     for (let gx = 0; gx < nx; gx += 1) {
       const id = nodeId(gx, gy, nx);
-      rawX[id] = gx * spacingX;
-      rawY[id] = gy * spacingY;
+      rawX[id] = FIELD_X + gx * spacing;
+      rawY[id] = FIELD_Y + gy * spacing;
       blocked[id] = wallAt(rawX[id], rawY[id]) ? 1 : 0;
     }
   }
@@ -122,8 +141,8 @@ function buildMassSpringNetwork() {
   for (let i = 0; i < rawCount; i += 1) {
     const j = nodeMap[i];
     if (j >= 0) {
-      const jitterX = (Math.random() - 0.5) * spacingX * 0.10;
-      const jitterY = (Math.random() - 0.5) * spacingY * 0.10;
+      const jitterX = (Math.random() - 0.5) * spacing * 0.08;
+      const jitterY = (Math.random() - 0.5) * spacing * 0.08;
       x[j] = rawX[i] + jitterX;
       y[j] = rawY[i] + jitterY;
       x0[j] = x[j];
@@ -150,7 +169,7 @@ function buildMassSpringNetwork() {
 function stepMassSpring() {
   if (!network) return;
   const strength = Number(simEl("sim-strength")?.value || 75) / 100;
-  const dt = 0.18, damping = 0.935, baseK = 0.020, anchorK = 0.0009, noise = 0.028;
+  const dt = 0.18, damping = 0.935, baseK = 0.020, anchorK = 0.0009, noise = 0.026;
   network.fx.fill(0); network.fy.fill(0);
   const tRamp = Math.min(1, simFrame / 90);
   for (const s of network.springs) {
@@ -170,11 +189,12 @@ function stepMassSpring() {
     network.vy[i] = (network.vy[i] + network.fy[i] * dt + (Math.random() - 0.5) * noise) * damping;
     let nx = network.x[i] + network.vx[i] * dt, ny = network.y[i] + network.vy[i] * dt;
     if (wallAt(nx, ny)) { network.vx[i] = 0; network.vy[i] = 0; nx = network.x[i]; ny = network.y[i]; }
-    network.x[i] = Math.max(0, Math.min(SIM_W - 1, nx));
-    network.y[i] = Math.max(0, Math.min(SIM_H - 1, ny));
+    network.x[i] = Math.max(FIELD_X, Math.min(FIELD_X + FIELD_SIZE, nx));
+    network.y[i] = Math.max(FIELD_Y, Math.min(FIELD_Y + FIELD_SIZE, ny));
   }
   simFrame += 1;
 }
+
 function bwrColor(value) {
   const v = Math.max(-1, Math.min(1, value));
   if (v >= 0) {
@@ -184,20 +204,20 @@ function bwrColor(value) {
   const t = -v;
   return [Math.round(255 * (1 - t)), Math.round(255 * (1 - t)), 255];
 }
-function ratioToColor(ratio) { return bwrColor(Math.log2(Math.max(0.125, Math.min(8.0, ratio))) / 3.0); }
+function ratioToColor(ratio) { return bwrColor(Math.log2(Math.max(0.2, Math.min(10.0, ratio))) / Math.log2(10)); }
 function drawColorbar(ctx) {
   const grad = ctx.createLinearGradient(0, BAR_Y + BAR_H, 0, BAR_Y);
   grad.addColorStop(0, "rgb(38,38,255)"); grad.addColorStop(0.5, "rgb(255,255,255)"); grad.addColorStop(1, "rgb(255,38,38)");
   ctx.fillStyle = grad; ctx.fillRect(BAR_X, BAR_Y, BAR_W, BAR_H);
-  ctx.strokeStyle = "#333"; ctx.strokeRect(BAR_X, BAR_Y, BAR_W, BAR_H);
-  ctx.fillStyle = "#303640"; ctx.font = "18px system-ui, sans-serif";
-  const labels = [["8.00", 0], ["4.00", 0.25], ["1.00", 0.5], ["0.25", 0.75], ["0.12", 1]];
+  ctx.strokeStyle = "#333"; ctx.lineWidth = 1.2; ctx.strokeRect(BAR_X, BAR_Y, BAR_W, BAR_H);
+  ctx.fillStyle = "#222"; ctx.font = "20px system-ui, sans-serif";
+  const labels = [["10.00", 0.00], ["8.60", 0.143], ["7.20", 0.286], ["5.80", 0.429], ["4.40", 0.571], ["3.00", 0.714], ["1.60", 0.857], ["0.20", 1.00]];
   for (const [label, frac] of labels) {
     const y = BAR_Y + BAR_H * frac;
     ctx.beginPath(); ctx.moveTo(BAR_X + BAR_W, y); ctx.lineTo(BAR_X + BAR_W + 8, y); ctx.stroke();
-    ctx.fillText(label, BAR_X + BAR_W + 14, y + 6);
+    ctx.fillText(label, BAR_X + BAR_W + 15, y + 7);
   }
-  ctx.save(); ctx.translate(BAR_X + 86, BAR_Y + BAR_H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("MT concentration ratio", -96, 0); ctx.restore();
+  ctx.save(); ctx.translate(BAR_X + 128, BAR_Y + BAR_H / 2); ctx.rotate(-Math.PI / 2); ctx.font = "24px system-ui, sans-serif"; ctx.fillText("MT concentration ratio", -118, 0); ctx.restore();
 }
 function drawMassSpringFrame() {
   const canvas = simEl("sim-canvas"), ctx = canvas.getContext("2d"), density = new Float32Array(DENSITY_W * DENSITY_H);
@@ -206,29 +226,30 @@ function drawMassSpringFrame() {
   const image = ctx.createImageData(DENSITY_W, DENSITY_H);
   for (let y = 0; y < DENSITY_H; y += 1) {
     for (let x = 0; x < DENSITY_W; x += 1) {
-      const p = y * DENSITY_W + x, px = (x + 0.5) * SIM_W / DENSITY_W, py = (y + 0.5) * SIM_H / DENSITY_H;
+      const p = y * DENSITY_W + x, px = densityToFieldX(x), py = densityToFieldY(y);
       const baseline = Math.max(0.02, network.refDensity[p]);
       let [r, g, b] = ratioToColor(density[p] / baseline);
-      if (lightAt(px, py)) { r = Math.round(r * 0.88); g = Math.round(g * 0.96 + 10); b = Math.round(b * 0.88); }
-      if (wallAt(px, py)) { r = 235; g = 235; b = 235; }
+      if (wallAt(px, py)) { r = 54; g = 67; b = 72; }
+      if (lightAt(px, py)) { r = Math.min(255, Math.round(r * 0.74 + 62)); g = Math.min(255, Math.round(g * 0.78 + 62)); b = Math.round(b * 0.74); }
       const o = p * 4; image.data[o] = r; image.data[o + 1] = g; image.data[o + 2] = b; image.data[o + 3] = 255;
     }
   }
   const heatCanvas = document.createElement("canvas");
   heatCanvas.width = DENSITY_W; heatCanvas.height = DENSITY_H; heatCanvas.getContext("2d").putImageData(image, 0, 0);
   ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, SIM_W, SIM_H);
+  ctx.fillStyle = "#111"; ctx.font = "26px system-ui, sans-serif"; ctx.textAlign = "center";
+  ctx.fillText(`Mass-Spring System with Density Heatmap: Frame ${simFrame.toLocaleString()}`, PLOT_X + PLOT_SIZE / 2, 38);
+  ctx.textAlign = "start";
   ctx.imageSmoothingEnabled = true; ctx.drawImage(heatCanvas, PLOT_X, PLOT_Y, PLOT_SIZE, PLOT_SIZE);
-  ctx.strokeStyle = "#20242a"; ctx.lineWidth = 1.5; ctx.strokeRect(PLOT_X, PLOT_Y, PLOT_SIZE, PLOT_SIZE);
+  ctx.strokeStyle = "#333"; ctx.lineWidth = 1.2; ctx.strokeRect(PLOT_X, PLOT_Y, PLOT_SIZE, PLOT_SIZE);
   drawColorbar(ctx);
-  ctx.fillStyle = "#303640"; ctx.font = "21px system-ui, sans-serif";
-  ctx.fillText(`Frame ${simFrame.toLocaleString()}    masses ${network.alive.toLocaleString()}    springs ${network.springs.length.toLocaleString()}`, PLOT_X, SIM_H - 14);
 }
 function loop() {
   if (!simRunning) return;
   const steps = Number(simEl("sim-speed")?.value || 4);
   for (let i = 0; i < steps; i += 1) stepMassSpring();
   drawMassSpringFrame();
-  if (simFrame % 20 === 0) setStatus(`Running dense mass-spring simulation. Frame ${simFrame.toLocaleString()} with ${network.alive.toLocaleString()} masses and ${network.springs.length.toLocaleString()} springs.`);
+  if (simFrame % 20 === 0) setStatus(`Running calibrated projector-scale simulation. Frame ${simFrame.toLocaleString()} with ${network.alive.toLocaleString()} masses and ${network.springs.length.toLocaleString()} springs.`);
   simAnimation = requestAnimationFrame(loop);
 }
 function runSim() {
@@ -237,9 +258,9 @@ function runSim() {
   network = buildMassSpringNetwork();
   simFrame = 0;
   if (network.alive < 250 || network.springs.length < 250) { clearOutput("Mask leaves too little free gel to simulate. Clear or reduce red walls."); return; }
-  const lightPct = (100 * masks.lightCount / (SIM_W * SIM_H)).toFixed(1), wallPct = (100 * masks.wallCount / (SIM_W * SIM_H)).toFixed(1);
+  const lightPct = (100 * masks.lightCount / (PROJECTOR_SIZE * PROJECTOR_SIZE)).toFixed(1), wallPct = (100 * masks.wallCount / (FIELD_SIZE * FIELD_SIZE)).toFixed(1);
   drawMassSpringFrame();
-  setStatus(`Running dense mass-spring simulation. Light area: ${lightPct}%. Wall area: ${wallPct}%. ${network.alive.toLocaleString()} masses, ${network.springs.length.toLocaleString()} springs.`);
+  setStatus(`Running calibrated projector-scale simulation. Projector light area: ${lightPct}%. Field wall area: ${wallPct}%. ${network.alive.toLocaleString()} masses, ${network.springs.length.toLocaleString()} springs.`);
   simRunning = true; simAnimation = requestAnimationFrame(loop);
 }
 function stopSim() { simRunning = false; if (simAnimation) cancelAnimationFrame(simAnimation); simAnimation = null; }
