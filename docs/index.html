@@ -47,138 +47,49 @@
       </div>
       <div class="diy-layout">
         <aside class="diy-controls" aria-label="DIY drawing and simulation controls">
-          <div class="control-header">
-            <span class="eyebrow">Control panel</span>
-            <h3>Professional mask editor</h3>
-            <p>Use grid snapping, vector paths, arcs, and filled primitives to create clean masks before simulation.</p>
-          </div>
-
+          <div class="control-header"><span class="eyebrow">Control panel</span><h3>Professional mask editor</h3><p>Use grid snapping, vector paths, arcs, and filled primitives to create clean masks before simulation.</p></div>
           <section class="control-group" aria-labelledby="drawing-controls-title">
-            <div class="control-group-heading">
-              <span class="step-badge">1</span>
-              <h4 id="drawing-controls-title">Drawing tools</h4>
-            </div>
-            <label>
-              Drawing layer
-              <select id="diy-mode">
-                <option value="light">Light activation (blue)</option>
-                <option value="mask">PDMS wall mask (red)</option>
-              </select>
-            </label>
-            <label>
-              Tool
-              <select id="diy-tool">
-                <option value="line">Line path</option>
-                <option value="arc">3-point arc</option>
-                <option value="rect">Filled rectangle</option>
-                <option value="ellipse">Filled ellipse</option>
-                <option value="polygon">Filled polygon</option>
-              </select>
-            </label>
-            <label>
-              Line width
-              <input id="diy-brush" type="range" min="2" max="120" value="16" />
-              <span id="diy-brush-value">16 px</span>
-            </label>
-            <div class="button-row button-row-single">
-              <button id="diy-fill-path" class="secondary-button" type="button">Fill current path</button>
-            </div>
+            <div class="control-group-heading"><span class="step-badge">1</span><h4 id="drawing-controls-title">Drawing tools</h4></div>
+            <label>Drawing layer<select id="diy-mode"><option value="light">Light activation (blue)</option><option value="mask">PDMS wall mask (red)</option></select></label>
+            <label>Tool<select id="diy-tool"><option value="line">Line path</option><option value="arc">3-point arc</option><option value="rect">Filled rectangle</option><option value="ellipse">Filled ellipse</option><option value="polygon">Filled polygon</option></select></label>
+            <label>Line width<input id="diy-brush" type="range" min="2" max="120" value="16" /><span id="diy-brush-value">16 px</span></label>
+            <div class="button-row button-row-single"><button id="diy-fill-path" class="secondary-button" type="button">Fill current path</button></div>
           </section>
-
           <section class="control-group" aria-labelledby="grid-controls-title">
-            <div class="control-group-heading">
-              <span class="step-badge">2</span>
-              <h4 id="grid-controls-title">Grid and snapping</h4>
-            </div>
-            <label class="checkbox-row">
-              <input id="diy-grid-enabled" type="checkbox" checked />
-              Show calibrated grid
-            </label>
-            <label>
-              Grid spacing
-              <input id="diy-grid-spacing" type="number" min="25" max="750" step="25" value="150" />
-              <span id="diy-grid-spacing-value">150 µm grid, 48.7 px spacing</span>
-            </label>
-            <label class="checkbox-row">
-              <input id="diy-snap-grid" type="checkbox" checked />
-              Snap points to grid
-            </label>
-            <label class="checkbox-row">
-              <input id="diy-angle-lock" type="checkbox" />
-              Lock line angles to 45° increments
-            </label>
+            <div class="control-group-heading"><span class="step-badge">2</span><h4 id="grid-controls-title">Grid and snapping</h4></div>
+            <label class="checkbox-row"><input id="diy-grid-enabled" type="checkbox" checked />Show calibrated grid</label>
+            <label>Grid spacing<input id="diy-grid-spacing" type="number" min="25" max="750" step="25" value="150" /><span id="diy-grid-spacing-value">150 µm grid, 48.7 px spacing</span></label>
+            <label class="checkbox-row"><input id="diy-snap-grid" type="checkbox" checked />Snap points to grid</label>
+            <label class="checkbox-row"><input id="diy-angle-lock" type="checkbox" />Lock line angles to 45° increments</label>
           </section>
-
           <section class="control-group" aria-labelledby="simulation-controls-title">
-            <div class="control-group-heading">
-              <span class="step-badge">3</span>
-              <h4 id="simulation-controls-title">Simulation setup</h4>
-            </div>
-            <label>
-              Mass count
-              <input id="sim-particles" type="range" min="10000" max="160000" step="10000" value="90000" />
-              <span id="sim-particles-value">90,000 masses</span>
-            </label>
-            <label>
-              Activation strength
-              <input id="sim-strength" type="range" min="0" max="100" value="100" />
-              <span id="sim-strength-value">100%</span>
-            </label>
-            <label>
-              Simulation speed
-              <input id="sim-speed" type="range" min="1" max="8" value="1" />
-              <span id="sim-speed-value">1 steps/frame</span>
-            </label>
+            <div class="control-group-heading"><span class="step-badge">3</span><h4 id="simulation-controls-title">Simulation setup</h4></div>
+            <label>Mass count<input id="sim-particles" type="range" min="10000" max="160000" step="10000" value="90000" /><span id="sim-particles-value">90,000 masses</span></label>
+            <label>Activation strength<input id="sim-strength" type="range" min="0" max="100" value="100" /><span id="sim-strength-value">100%</span></label>
+            <label>Simulation speed<input id="sim-speed" type="range" min="1" max="8" value="1" /><span id="sim-speed-value">1 steps/frame</span></label>
           </section>
-
           <section class="control-group" aria-labelledby="run-controls-title">
-            <div class="control-group-heading">
-              <span class="step-badge">4</span>
-              <h4 id="run-controls-title">Run</h4>
-            </div>
-            <div class="button-row run-button-row">
-              <button id="sim-run" class="primary-button" type="button">Run simulation</button>
-              <button id="sim-pause" class="secondary-button" type="button">Pause</button>
-              <button id="sim-reset" class="secondary-button" type="button">Reset</button>
-            </div>
+            <div class="control-group-heading"><span class="step-badge">4</span><h4 id="run-controls-title">Run</h4></div>
+            <div class="button-row run-button-row"><button id="sim-run" class="primary-button" type="button">Run simulation</button><button id="sim-pause" class="secondary-button" type="button">Pause</button><button id="sim-reset" class="secondary-button" type="button">Reset</button></div>
             <p id="sim-status" class="helper-text status-box">Draw masks, then click Run simulation.</p>
           </section>
-
           <section class="control-group" aria-labelledby="export-controls-title">
-            <div class="control-group-heading">
-              <span class="step-badge">5</span>
-              <h4 id="export-controls-title">Export</h4>
-            </div>
-            <div class="button-row export-button-row">
-              <button id="diy-export-light" class="secondary-button" type="button">Light mask</button>
-              <button id="diy-export-gel" class="secondary-button" type="button">Gel mask</button>
-              <button id="sim-export-frame" class="secondary-button" type="button">Result frame</button>
-            </div>
+            <div class="control-group-heading"><span class="step-badge">5</span><h4 id="export-controls-title">Export</h4></div>
+            <div class="button-row export-button-row"><button id="diy-export-light" class="secondary-button" type="button">Light mask</button><button id="diy-export-gel" class="secondary-button" type="button">Gel mask</button><button id="sim-export-frame" class="secondary-button" type="button">Result frame</button></div>
           </section>
         </aside>
         <div class="diy-stage">
           <div class="canvas-panel">
-            <div class="canvas-panel-header">
-              <h3>Input masks</h3>
-              <div class="canvas-toolbar" aria-label="Drawing actions">
-                <button id="diy-undo" class="secondary-button compact-button" type="button">Undo</button>
-                <button id="diy-redo" class="secondary-button compact-button" type="button">Redo</button>
-                <button id="diy-done-path" class="primary-button compact-button" type="button">Done</button>
-                <button id="diy-cancel-path" class="secondary-button compact-button" type="button">Cancel</button>
-                <button id="diy-clear" class="secondary-button compact-button" type="button">Clear all</button>
-              </div>
-            </div>
+            <div class="canvas-panel-header"><h3>Input masks</h3><div class="canvas-toolbar" aria-label="Drawing actions"><button id="diy-undo" class="secondary-button compact-button" type="button">Undo</button><button id="diy-redo" class="secondary-button compact-button" type="button">Redo</button><button id="diy-done-path" class="primary-button compact-button" type="button">Done</button><button id="diy-cancel-path" class="secondary-button compact-button" type="button">Cancel</button><button id="diy-clear" class="secondary-button compact-button" type="button">Clear all</button></div></div>
             <p id="diy-drawing-status" class="canvas-status">Line path: click points. Press Done or Escape to finish.</p>
             <canvas id="diy-canvas" width="1280" height="800" aria-label="DIY pattern drawing canvas"></canvas>
           </div>
-          <div class="canvas-panel">
-            <h3>Simulation output</h3>
-            <canvas id="sim-canvas" width="1280" height="800" aria-label="DIY simulation result canvas"></canvas>
-          </div>
+          <div class="canvas-panel"><h3>Simulation output</h3><canvas id="sim-canvas" width="1280" height="800" aria-label="DIY simulation result canvas"></canvas></div>
         </div>
       </div>
     </section>
   </main>
+  <script src="diy-editor.js"></script>
   <script src="app.js"></script>
   <script src="sim.js"></script>
 </body>
