@@ -23,7 +23,7 @@ TEMPLATE_DIR = ROOT / "tools" / "static_templates"
 
 CATEGORY_ORDER = ["Turbo", "Whirlpool", "Centipede", "2Layer", "Zigzag", "Activation Example"]
 TIFF_EXTS = {".tif", ".tiff"}
-STATIC_TEMPLATE_FILES = ["index.html", "styles.css", "app.js", "app-main.js", "sim.js", "sim-body-fix.js"]
+STATIC_TEMPLATE_FILES = ["index.html", "styles.css", "app.js", "app-main.js", "sim.js", "sim-original-config.js"]
 
 
 def slugify(value: str) -> str:
