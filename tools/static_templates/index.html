@@ -15,7 +15,6 @@
     </div>
     <div class="topbar-actions">
       <input id="search" type="search" placeholder="Search simulations" aria-label="Search simulations" />
-      <button id="diy-open" class="primary-button" type="button">Run a DIY simulation</button>
     </div>
   </header>
   <main>
@@ -48,59 +47,92 @@
       </div>
       <div class="diy-layout">
         <aside class="diy-controls" aria-label="DIY drawing and simulation controls">
-          <label>
-            Drawing layer
-            <select id="diy-mode">
-              <option value="light">Draw Light (blue)</option>
-              <option value="mask">Draw Mask (red)</option>
-            </select>
-          </label>
-          <label>
-            Tool
-            <select id="diy-tool">
-              <option value="draw">Free draw</option>
-              <option value="rect">Rectangle/Square</option>
-              <option value="circle">Circle</option>
-            </select>
-          </label>
-          <label class="checkbox-row">
-            <input id="diy-filled" type="checkbox" />
-            Fill shape
-          </label>
-          <label>
-            Brush/Stroke size
-            <input id="diy-brush" type="range" min="2" max="60" value="16" />
-            <span id="diy-brush-value">16 px</span>
-          </label>
-          <label>
-            Mass count
-            <input id="sim-particles" type="range" min="10000" max="160000" step="10000" value="90000" />
-            <span id="sim-particles-value">90,000 masses</span>
-          </label>
-          <label>
-            Activation strength
-            <input id="sim-strength" type="range" min="0" max="100" value="100" />
-            <span id="sim-strength-value">100%</span>
-          </label>
-          <label>
-            Simulation speed
-            <input id="sim-speed" type="range" min="1" max="8" value="1" />
-            <span id="sim-speed-value">1 steps/frame</span>
-          </label>
-          <div class="button-row">
-            <button id="diy-clear" class="secondary-button" type="button">Clear masks</button>
+          <div class="control-header">
+            <span class="eyebrow">Control panel</span>
+            <h3>Build and run</h3>
+            <p>Set up the mask, run the calibrated simulation, then export the inputs or output frame.</p>
           </div>
-          <div class="button-row">
-            <button id="sim-run" class="primary-button" type="button">Run simulation</button>
-            <button id="sim-pause" class="secondary-button" type="button">Pause</button>
-            <button id="sim-reset" class="secondary-button" type="button">Reset</button>
-          </div>
-          <div class="button-row">
-            <button id="diy-export-light" class="secondary-button" type="button">Export lightmask.png</button>
-            <button id="diy-export-gel" class="secondary-button" type="button">Export gelmask.png</button>
-            <button id="sim-export-frame" class="secondary-button" type="button">Export result frame</button>
-          </div>
-          <p id="sim-status" class="helper-text">Draw masks, then click Run simulation.</p>
+
+          <section class="control-group" aria-labelledby="drawing-controls-title">
+            <div class="control-group-heading">
+              <span class="step-badge">1</span>
+              <h4 id="drawing-controls-title">Draw masks</h4>
+            </div>
+            <label>
+              Drawing layer
+              <select id="diy-mode">
+                <option value="light">Draw Light (blue)</option>
+                <option value="mask">Draw Mask (red)</option>
+              </select>
+            </label>
+            <label>
+              Tool
+              <select id="diy-tool">
+                <option value="draw">Free draw</option>
+                <option value="rect">Rectangle/Square</option>
+                <option value="circle">Circle</option>
+              </select>
+            </label>
+            <label class="checkbox-row">
+              <input id="diy-filled" type="checkbox" />
+              Fill shape
+            </label>
+            <label>
+              Brush/Stroke size
+              <input id="diy-brush" type="range" min="2" max="60" value="16" />
+              <span id="diy-brush-value">16 px</span>
+            </label>
+            <div class="button-row button-row-single">
+              <button id="diy-clear" class="secondary-button" type="button">Clear masks</button>
+            </div>
+          </section>
+
+          <section class="control-group" aria-labelledby="simulation-controls-title">
+            <div class="control-group-heading">
+              <span class="step-badge">2</span>
+              <h4 id="simulation-controls-title">Simulation setup</h4>
+            </div>
+            <label>
+              Mass count
+              <input id="sim-particles" type="range" min="10000" max="160000" step="10000" value="90000" />
+              <span id="sim-particles-value">90,000 masses</span>
+            </label>
+            <label>
+              Activation strength
+              <input id="sim-strength" type="range" min="0" max="100" value="100" />
+              <span id="sim-strength-value">100%</span>
+            </label>
+            <label>
+              Simulation speed
+              <input id="sim-speed" type="range" min="1" max="8" value="1" />
+              <span id="sim-speed-value">1 steps/frame</span>
+            </label>
+          </section>
+
+          <section class="control-group" aria-labelledby="run-controls-title">
+            <div class="control-group-heading">
+              <span class="step-badge">3</span>
+              <h4 id="run-controls-title">Run</h4>
+            </div>
+            <div class="button-row run-button-row">
+              <button id="sim-run" class="primary-button" type="button">Run simulation</button>
+              <button id="sim-pause" class="secondary-button" type="button">Pause</button>
+              <button id="sim-reset" class="secondary-button" type="button">Reset</button>
+            </div>
+            <p id="sim-status" class="helper-text status-box">Draw masks, then click Run simulation.</p>
+          </section>
+
+          <section class="control-group" aria-labelledby="export-controls-title">
+            <div class="control-group-heading">
+              <span class="step-badge">4</span>
+              <h4 id="export-controls-title">Export</h4>
+            </div>
+            <div class="button-row export-button-row">
+              <button id="diy-export-light" class="secondary-button" type="button">Light mask</button>
+              <button id="diy-export-gel" class="secondary-button" type="button">Gel mask</button>
+              <button id="sim-export-frame" class="secondary-button" type="button">Result frame</button>
+            </div>
+          </section>
         </aside>
         <div class="diy-stage">
           <div class="canvas-panel">
